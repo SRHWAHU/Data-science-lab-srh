@@ -1,0 +1,17 @@
+SELECT vin,vehicle_model_seq,
+	charge_time,
+	COUNT(charge_time) charge_cnt,
+	charge_latitude,
+	charge_longitude,
+	SUM((end_soc - start_soc)) sum_soc
+FROM (SELECT vin,vehicle_model_seq,
+	from_unixtime(cast(start_point.collectiontime/1000 as bigint),'yyyy-MM-dd') charge_time,
+	start_point.latitude charge_latitude,
+	start_point.longitude charge_longitude,
+	start_point.soc start_soc,
+	end_point.soc end_soc
+FROM evdata_dw.new_trip_merge_2022
+WHERE trip_kind = 'C' AND from_unixtime(cast(start_point.collectiontime/1000 as bigint),'yyyyMMdd') LIKE '202207%') t
+GROUP BY vin,vehicle_model_seq,charge_time,charge_latitude,charge_longitude;
+
+
